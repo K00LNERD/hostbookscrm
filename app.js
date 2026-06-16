@@ -496,6 +496,11 @@ function openAddLeadDialog() {
   document.getElementById("addContact").value = "";
   document.getElementById("addEmail").value = "";
   document.getElementById("addPhone").value = "";
+  document.getElementById("addWebsite").value = "";
+  document.getElementById("addDesignation").value = "";
+  document.getElementById("addCity").value = "";
+  document.getElementById("addState").value = "";
+  document.getElementById("addRevenue").value = "";
   document.getElementById("addBudget").value = 10000;
   document.getElementById("addTemperature").value = "warm";
   document.getElementById("addStatus").value = "new";
@@ -510,6 +515,11 @@ function handleAddLeadSubmit(e) {
   const contactName = document.getElementById("addContact").value.trim();
   const email = document.getElementById("addEmail").value.trim();
   const phone = document.getElementById("addPhone").value.trim();
+  const website = document.getElementById("addWebsite").value.trim();
+  const contactRole = document.getElementById("addDesignation").value.trim();
+  const city = document.getElementById("addCity").value.trim();
+  const state = document.getElementById("addState").value.trim();
+  const revenue = document.getElementById("addRevenue").value.trim();
   const budget = Number(document.getElementById("addBudget").value);
   const temperature = document.getElementById("addTemperature").value;
   const status = document.getElementById("addStatus").value;
@@ -527,6 +537,11 @@ function handleAddLeadSubmit(e) {
     contactName,
     email: email || "N/A",
     phone: phone || "N/A",
+    website: website || "N/A",
+    contactRole: contactRole || "N/A",
+    city: city || "N/A",
+    state: state || "N/A",
+    revenue: revenue || "N/A",
     budget,
     temperature,
     status,
