@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AVP HostBooks - Kanban & Lead Tracking</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- 1. Toast Container for Notifications -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- 2. Login Screen (Glassmorphic Interface) -->
+  <div id="loginContainer" class="login-container">
+    <div class="login-backdrop-glows">
+      <div class="glow-orb orb-1"></div>
+      <div class="glow-orb orb-2"></div>
+    </div>
+    
+    <div class="login-card">
+      <div class="login-header">
+        <div class="login-logo">H</div>
+        <h1 class="login-title">AVP HostBooks</h1>
+        <p class="login-subtitle">Internal Lead Processing Portal</p>
+      </div>
+      
+      <form id="loginForm">
+        <div class="form-group">
+          <label class="form-label" for="loginUserSelect">Select Profile</label>
+          <select id="loginUserSelect" class="form-select" required>
+            <option value="" disabled selected>Select User</option>
+            <option value="vijay">Vijay (Boss)</option>
+            <option value="srijan">Srijan (Agent)</option>
+            <option value="harshit">Harshit (Agent)</option>
+            <option value="shivam">Shivam (Agent)</option>
+            <option value="vishal">Vishal (Agent)</option>
+            <option value="satya sai">Satya Sai (Agent)</option>
+            <option value="sandesh">Sandesh (Agent)</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label" for="loginPassword">Password</label>
+          <input type="password" id="loginPassword" class="form-input" placeholder="••••••••" required>
+        </div>
+        
+        <div id="loginError" class="error-msg">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+          <span>Incorrect password.</span>
+        </div>
+        
+        <button type="submit" class="btn" style="margin-top: 15px;">
+          <span>Sign In</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- 3. App Shell (Dashboard, Filters, Kanban Board) -->
+  <div id="appShell" class="app-shell">
+    <header class="header">
+      <div class="header-brand">
+        <div class="header-logo">H</div>
+        <span class="header-title">AVP HostBooks</span>
+      </div>
+      <div class="user-profile">
+        <div class="user-info">
+          <div id="headerUserName" class="user-name">-</div>
+          <div id="headerUserRole" class="user-role">-</div>
+        </div>
+        <div id="headerAvatar" class="avatar">-</div>
+        <button id="btnLogout" class="btn-logout" title="Sign Out">Logout</button>
+      </div>
+    </header>
+
+    <!-- Sub Header controls -->
+    <section class="sub-header">
+      <div class="page-title-group">
+        <h2>Sales Pipeline</h2>
+        <p>Monitor deal workflows, track interaction notes, and close leads</p>
+      </div>
+      
+      <div class="controls-group">
+        <div class="search-box">
+          <svg class="search-icon" data-lucide="search" width="16" height="16"></svg>
+          <input type="text" id="searchInput" class="search-input" placeholder="Search Company or Contact...">
+        </div>
+        
+        <div id="agentFilterGroup" class="controls-group" style="display: none;">
+          <select id="agentFilter" class="filter-select">
+            <!-- Programmatically populated for Vijay -->
+          </select>
+        </div>
+        
+        <button id="btnOpenAddLead" class="btn" style="padding: 10px 18px; font-size: 14px;">
+          <svg data-lucide="plus" width="16" height="16"></svg>
+          <span>Add Lead</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- Dashboard Quick KPIs -->
+    <section class="dashboard-grid">
+      <div class="metric-card">
+        <div class="metric-header">
+          <span>Active Leads</span>
+          <div class="metric-icon"><svg data-lucide="users" width="18" height="18"></svg></div>
+        </div>
+        <div id="kpiTotalLeads" class="metric-value">0</div>
+        <div class="metric-footer info">Total pipeline records</div>
+      </div>
+      
+      <div class="metric-card">
+        <div class="metric-header">
+          <span>Active Pipeline Value</span>
+          <div class="metric-icon"><svg data-lucide="dollar-sign" width="18" height="18"></svg></div>
+        </div>
+        <div id="kpiPipelineValue" class="metric-value">$0</div>
+        <div class="metric-footer warning">Non-closed deal values</div>
+      </div>
+      
+      <div class="metric-card">
+        <div class="metric-header">
+          <span>Closed Won Revenue</span>
+          <div class="metric-icon"><svg data-lucide="award" width="18" height="18"></svg></div>
+        </div>
+        <div id="kpiClosedWon" class="metric-value">$0</div>
+        <div class="metric-footer success">Completed contracts</div>
+      </div>
+      
+      <div class="metric-card">
+        <div class="metric-header">
+          <span>Hot Lead Ratio</span>
+          <div class="metric-icon"><svg data-lucide="flame" width="18" height="18"></svg></div>
+        </div>
+        <div id="kpiHotRatio" class="metric-value">0%</div>
+        <div class="metric-footer danger">High temperature conversion</div>
+      </div>
+    </section>
+
+    <!-- Boss (Vijay) progress matrix -->
+    <section id="bossProgressSection" class="boss-progress-section">
+      <div class="boss-progress-title">
+        <svg data-lucide="activity" width="20" height="20" style="color:var(--primary);"></svg>
+        <span>Sales Agent Performance Tracker</span>
+      </div>
+      <div style="overflow-x: auto;">
+        <table class="progress-table">
+          <thead>
+            <tr>
+              <th>Agent</th>
+              <th>Pipeline</th>
+              <th>Deals Closed</th>
+              <th>Conversion Progress</th>
+              <th>Lead Quality Mix</th>
+            </tr>
+          </thead>
+          <tbody id="bossProgressTableBody">
+            <!-- Dynamically injected rows -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Kanban Board Grid -->
+    <main class="kanban-container">
+      <!-- 1. New Column -->
+      <div id="col-new" class="kanban-column">
+        <div class="kanban-column-header">
+          <div class="column-title-group">
+            <div class="column-dot dot-new"></div>
+            <h3 class="column-name">New</h3>
+            <span id="col-new-count" class="column-count">0</span>
+          </div>
+          <span id="col-new-total" class="column-total">$0</span>
+        </div>
+        <div id="col-new-cards" class="kanban-column-cards"></div>
+      </div>
+
+      <!-- 2. Contacted Column -->
+      <div id="col-contacted" class="kanban-column">
+        <div class="kanban-column-header">
+          <div class="column-title-group">
+            <div class="column-dot dot-contacted"></div>
+            <h3 class="column-name">Contacted</h3>
+            <span id="col-contacted-count" class="column-count">0</span>
+          </div>
+          <span id="col-contacted-total" class="column-total">$0</span>
+        </div>
+        <div id="col-contacted-cards" class="kanban-column-cards"></div>
+      </div>
+
+      <!-- 3. Proposal Column -->
+      <div id="col-proposal" class="kanban-column">
+        <div class="kanban-column-header">
+          <div class="column-title-group">
+            <div class="column-dot dot-proposal"></div>
+            <h3 class="column-name">Proposal</h3>
+            <span id="col-proposal-count" class="column-count">0</span>
+          </div>
+          <span id="col-proposal-total" class="column-total">$0</span>
+        </div>
+        <div id="col-proposal-cards" class="kanban-column-cards"></div>
+      </div>
+
+      <!-- 4. Negotiation Column -->
+      <div id="col-negotiation" class="kanban-column">
+        <div class="kanban-column-header">
+          <div class="column-title-group">
+            <div class="column-dot dot-negotiation"></div>
+            <h3 class="column-name">Negotiation</h3>
+            <span id="col-negotiation-count" class="column-count">0</span>
+          </div>
+          <span id="col-negotiation-total" class="column-total">$0</span>
+        </div>
+        <div id="col-negotiation-cards" class="kanban-column-cards"></div>
+      </div>
+
+      <!-- 5. Won Column -->
+      <div id="col-won" class="kanban-column">
+        <div class="kanban-column-header">
+          <div class="column-title-group">
+            <div class="column-dot dot-won"></div>
+            <h3 class="column-name">Closed Won</h3>
+            <span id="col-won-count" class="column-count">0</span>
+          </div>
+          <span id="col-won-total" class="column-total">$0</span>
+        </div>
+        <div id="col-won-cards" class="kanban-column-cards"></div>
+      </div>
+
+      <!-- 6. Lost Column -->
+      <div id="col-lost" class="kanban-column">
+        <div class="kanban-column-header">
+          <div class="column-title-group">
+            <div class="column-dot dot-lost"></div>
+            <h3 class="column-name">Closed Lost</h3>
+            <span id="col-lost-count" class="column-count">0</span>
+          </div>
+          <span id="col-lost-total" class="column-total">$0</span>
+        </div>
+        <div id="col-lost-cards" class="kanban-column-cards"></div>
+      </div>
+    </main>
+  </div>
+
+  <!-- 4. Native Dialog: Add Lead Modal -->
+  <dialog id="addLeadDialog" closedby="any" aria-labelledby="addLeadTitle">
+    <div class="dialog-header">
+      <h2 id="addLeadTitle" class="dialog-title">Create New Lead</h2>
+      <button class="dialog-close-btn" onclick="document.getElementById('addLeadDialog').close()" aria-label="Close">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+    </div>
+    
+    <form id="addLeadForm">
+      <div class="dialog-body">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+          <div class="form-group">
+            <label class="form-label" for="addCompany">Company Name *</label>
+            <input type="text" id="addCompany" class="form-input" placeholder="e.g. Stark Labs" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="addContact">Contact Name *</label>
+            <input type="text" id="addContact" class="form-input" placeholder="e.g. Pepper Potts" required>
+          </div>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 16px;">
+          <div class="form-group">
+            <label class="form-label" for="addEmail">Email Address</label>
+            <input type="email" id="addEmail" class="form-input" placeholder="e.g. name@domain.com">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="addPhone">Phone Number</label>
+            <input type="text" id="addPhone" class="form-input" placeholder="e.g. +1-555-0100">
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+          <div class="form-group">
+            <label class="form-label" for="addBudget">Estimated Budget ($)</label>
+            <input type="number" id="addBudget" class="form-input" min="0" value="10000">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="addTemperature">Lead Temperature</label>
+            <select id="addTemperature" class="form-select">
+              <option value="hot">Hot</option>
+              <option value="warm" selected>Warm</option>
+              <option value="cold">Cold</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+          <div class="form-group">
+            <label class="form-label" for="addStatus">Pipeline Stage</label>
+            <select id="addStatus" class="form-select">
+              <option value="new" selected>New</option>
+              <option value="contacted">Contacted</option>
+              <option value="proposal">Proposal</option>
+              <option value="negotiation">Negotiation</option>
+              <option value="won">Closed Won</option>
+              <option value="lost">Closed Lost</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="addAssignee">Assign Agent</label>
+            <select id="addAssignee" class="form-select">
+              <!-- Dynamically structured -->
+            </select>
+          </div>
+        </div>
+      </div>
+      
+      <div class="dialog-footer">
+        <button type="button" class="btn btn-secondary" onclick="document.getElementById('addLeadDialog').close()">Cancel</button>
+        <button type="submit" class="btn">Create Lead</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- 5. Native Dialog: Lead Detail Modal -->
+  <dialog id="leadDetailDialog" class="detail-dialog" closedby="any" aria-labelledby="detailTitle">
+    <div class="dialog-header">
+      <h2 id="detailTitle" class="dialog-title">Lead Details</h2>
+      <button class="dialog-close-btn" onclick="document.getElementById('leadDetailDialog').close()" aria-label="Close">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+    </div>
+    
+    <div class="dialog-body">
+      <div class="detail-modal-layout">
+        
+        <!-- Left Column: Core Fields & Editable Dropdowns -->
+        <div>
+          <div class="detail-section-title">Lead Parameters</div>
+          <div class="detail-grid">
+            <div class="detail-field">
+              <span class="detail-label">Company</span>
+              <span id="detailCompany" class="detail-value">-</span>
+            </div>
+            <div class="detail-field">
+              <span class="detail-label">Contact</span>
+              <span id="detailContact" class="detail-value">-</span>
+            </div>
+            <div class="detail-field">
+              <span class="detail-label">Email</span>
+              <span id="detailEmail" class="detail-value">-</span>
+            </div>
+            <div class="detail-field">
+              <span class="detail-label">Phone</span>
+              <span id="detailPhone" class="detail-value">-</span>
+            </div>
+            <div class="detail-field">
+              <span class="detail-label">Estimated Deal Value</span>
+              <span id="detailBudget" class="detail-value" style="font-weight:700;">-</span>
+            </div>
+            <div class="detail-field">
+              <span class="detail-label">Quality Temperature</span>
+              <span id="detailTemperatureBadge" class="detail-value temperature-badge-inline">-</span>
+            </div>
+          </div>
+          
+          <div class="detail-section-title" style="margin-top:24px;">Edit Configuration</div>
+          
+          <div class="form-group">
+            <label class="form-label" for="editStatus">Pipeline Stage</label>
+            <select id="editStatus" class="form-select">
+              <option value="new">New</option>
+              <option value="contacted">Contacted</option>
+              <option value="proposal">Proposal</option>
+              <option value="negotiation">Negotiation</option>
+              <option value="won">Closed Won</option>
+              <option value="lost">Closed Lost</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label" for="editTemperature">Update Temperature</label>
+            <select id="editTemperature" class="form-select">
+              <option value="hot">Hot</option>
+              <option value="warm">Warm</option>
+              <option value="cold">Cold</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="editAssignee">Assign Agent</label>
+            <select id="editAssignee" class="form-select">
+              <!-- Populated by JS -->
+            </select>
+          </div>
+        </div>
+
+        <!-- Right Column: Interaction Note Logger & Notes Timeline -->
+        <div style="display:flex; flex-direction:column;">
+          <div class="detail-section-title">Client Interactions</div>
+          
+          <div class="interaction-input-group">
+            <textarea id="newNoteText" class="note-textarea" placeholder="Type notes here regarding your call, email, or meeting details..."></textarea>
+            <button id="btnAddNote" class="btn" style="padding:8px 14px; font-size:13px; align-self:flex-end;">
+              <svg data-lucide="message-square-plus" width="14" height="14"></svg>
+              <span>Add Note</span>
+            </button>
+          </div>
+          
+          <div class="detail-section-title" style="font-size:12px; margin-top:8px;">Interaction Timeline</div>
+          <div id="detailNotesList" class="notes-history">
+            <!-- Timeline details -->
+          </div>
+        </div>
+
+      </div>
+    </div>
+    
+    <div class="dialog-footer">
+      <button id="btnDeleteLead" class="btn btn-danger" style="margin-right:auto; padding:10px 18px; font-size:14px; display:none;">
+        <svg data-lucide="trash-2" width="16" height="16"></svg>
+        <span>Delete Lead</span>
+      </button>
+      <button type="button" class="btn btn-secondary" onclick="document.getElementById('leadDetailDialog').close()">Cancel</button>
+      <button id="btnSaveLeadDetails" type="button" class="btn">Save Changes</button>
+    </div>
+  </dialog>
+
+  <!-- Lucide Icons Libraries -->
+  <script src="https://cdn.jsdelivr.net/npm/lucide@latest"></script>
+  
+  <!-- Firebase SDKs & Config -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+  <script src="config.js"></script>
+  
+  <script src="app.js"></script>
+</body>
+</html>
