@@ -10,4 +10,4 @@ const firebaseConfig = {
 
 // Google Sheets Sync Configuration
 // Paste your deployed Google Web App Webhook URL here to enable real-time sheet sync
-const googleSheetWebhookUrl = "";
+const googleSheetWebhookUrl = "https://script.google.com/macros/s/AKfycbzaee46sd0iuhysYbxgPFL7DG-qcfeGS8D_yW5BiKq4mjX9kwQCuAs9bvN5RMVnKWB-PQ/exec";
