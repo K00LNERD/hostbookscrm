@@ -1,13 +1,9 @@
 // AVP HostBooks Firebase Configuration
-// If this file is empty or firebaseConfig is undefined, the app will run locally using localStorage.
-
-/*
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT_ID.appspot.com",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyAgBsazTubh1u243BnrB-m5MJG4-xvNaTM",
+  authDomain: "avp-hostbooks.firebaseapp.com",
+  projectId: "avp-hostbooks",
+  storageBucket: "avp-hostbooks.firebasestorage.app",
+  messagingSenderId: "497614595976",
+  appId: "1:497614595976:web:705d737cf9ffd2dc1d3c3d"
 };
-*/

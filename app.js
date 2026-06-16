@@ -167,6 +167,7 @@ function showAppShell() {
 function configureRoleViews() {
   const agentFilterGroup = document.getElementById("agentFilterGroup");
   const agentFilter = document.getElementById("agentFilter");
+  const exportBtn = document.getElementById("btnExportExcel");
   
   // Clear previous options in filter
   agentFilter.innerHTML = "";
@@ -174,6 +175,7 @@ function configureRoleViews() {
   if (currentUser.role === "boss") {
     // Boss can filter by any agent or view all
     agentFilterGroup.style.display = "block";
+    exportBtn.style.display = "inline-flex";
     
     const optAll = document.createElement("option");
     optAll.value = "all";
@@ -195,6 +197,7 @@ function configureRoleViews() {
   } else {
     // Agents view is locked to their own leads
     agentFilterGroup.style.display = "none";
+    exportBtn.style.display = "none";
     document.getElementById("bossProgressSection").style.display = "none";
   }
 }
@@ -802,6 +805,88 @@ function handleDeleteLead() {
 }
 
 // 9. Auxiliary Helpers
+function exportToExcel() {
+  if (currentUser.role !== "boss") {
+    showToast("Only the Administrator (Vijay) can export data.", "error");
+    return;
+  }
+  
+  if (leads.length === 0) {
+    showToast("No leads available to export.", "error");
+    return;
+  }
+
+  // Define CSV headers
+  const headers = [
+    "Lead ID", 
+    "Company Name", 
+    "Contact Name", 
+    "Email", 
+    "Phone", 
+    "Budget", 
+    "Temperature", 
+    "Stage", 
+    "Assignee", 
+    "Notes Count",
+    "Last Interaction Date",
+    "Last Interaction Text",
+    "Full Note History"
+  ];
+
+  // Convert leads array to CSV rows
+  const rows = leads.map(lead => {
+    const assigneeName = USERS[lead.assignee] ? USERS[lead.assignee].name : lead.assignee;
+    
+    // Extract notes information
+    const notesCount = lead.notes ? lead.notes.length : 0;
+    const lastNote = (lead.notes && lead.notes.length > 0) ? lead.notes[0] : null;
+    const lastNoteDate = lastNote ? lastNote.date : "N/A";
+    const lastNoteText = lastNote ? lastNote.text.replace(/"/g, '""') : "N/A";
+    
+    const fullHistoryText = lead.notes 
+      ? lead.notes.map(n => `[${n.date} - ${n.author}]: ${n.text}`).join(" | ").replace(/"/g, '""')
+      : "";
+
+    return [
+      lead.id || "N/A",
+      lead.company,
+      lead.contactName,
+      lead.email,
+      lead.phone,
+      lead.budget,
+      lead.temperature,
+      lead.status,
+      assigneeName,
+      notesCount,
+      lastNoteDate,
+      lastNoteText,
+      fullHistoryText
+    ];
+  });
+
+  // Combine headers and rows
+  const csvContent = [
+    headers.join(","),
+    ...rows.map(row => row.map(val => `"${String(val).replace(/\n/g, " ")}"`).join(","))
+  ].join("\n");
+
+  // Create downloadable blob
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  
+  const timestamp = new Date().toISOString().substring(0, 10);
+  link.setAttribute("href", url);
+  link.setAttribute("download", `AVP_HostBooks_CRM_Export_${timestamp}.csv`);
+  link.style.visibility = "hidden";
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  
+  showToast("Excel spreadsheet downloaded successfully.", "success");
+}
+
+
 function escapeHtml(str) {
   if (!str) return "";
   return str
@@ -848,6 +933,7 @@ window.addEventListener("DOMContentLoaded", () => {
   document.getElementById("searchInput").addEventListener("input", refreshAllData);
   document.getElementById("agentFilter").addEventListener("change", refreshAllData);
   
+  document.getElementById("btnExportExcel").addEventListener("click", exportToExcel);
   document.getElementById("btnOpenAddLead").addEventListener("click", openAddLeadDialog);
   document.getElementById("addLeadForm").addEventListener("submit", handleAddLeadSubmit);
   
