@@ -94,7 +94,13 @@
           </select>
         </div>
         
-        <button id="btnExportExcel" class="btn btn-secondary" style="padding: 10px 18px; font-size: 14px; display: none;">
+        <button id="btnImportExcel" class="btn btn-secondary" style="padding: 10px 18px; font-size: 14px; display: none; margin-right: 8px;">
+          <svg data-lucide="upload" width="16" height="16"></svg>
+          <span>Import Excel</span>
+        </button>
+        <input type="file" id="importFileInput" accept=".xlsx, .xls, .csv" style="display: none;">
+
+        <button id="btnExportExcel" class="btn btn-secondary" style="padding: 10px 18px; font-size: 14px; display: none; margin-right: 8px;">
           <svg data-lucide="download" width="16" height="16"></svg>
           <span>Export Excel</span>
         </button>
@@ -345,27 +351,31 @@
           <div class="detail-grid">
             <div class="detail-field">
               <span class="detail-label">Company</span>
-              <span id="detailCompany" class="detail-value">-</span>
+              <span id="detailCompany" class="detail-value" style="font-weight:700; font-size:15px; display:inline-block; padding: 6px 0;">-</span>
             </div>
             <div class="detail-field">
-              <span class="detail-label">Contact</span>
-              <span id="detailContact" class="detail-value">-</span>
+              <span class="detail-label">Contact Name</span>
+              <input type="text" id="editContactName" class="form-input" style="padding: 6px 10px; font-size: 13px;">
             </div>
             <div class="detail-field">
-              <span class="detail-label">Email</span>
-              <span id="detailEmail" class="detail-value">-</span>
+              <span class="detail-label">Email Address</span>
+              <input type="email" id="editEmailAddress" class="form-input" style="padding: 6px 10px; font-size: 13px;">
             </div>
             <div class="detail-field">
-              <span class="detail-label">Phone</span>
-              <span id="detailPhone" class="detail-value">-</span>
+              <span class="detail-label">Phone Number</span>
+              <input type="text" id="editPhoneNumber" class="form-input" style="padding: 6px 10px; font-size: 13px;">
             </div>
             <div class="detail-field">
-              <span class="detail-label">Estimated Deal Value</span>
-              <span id="detailBudget" class="detail-value" style="font-weight:700;">-</span>
+              <span class="detail-label">Estimated Deal Value (₹)</span>
+              <input type="number" id="editBudgetAmount" class="form-input" style="padding: 6px 10px; font-size: 13px; font-weight: 700;">
             </div>
             <div class="detail-field">
               <span class="detail-label">Quality Temperature</span>
-              <span id="detailTemperatureBadge" class="detail-value temperature-badge-inline">-</span>
+              <select id="editTemperature" class="form-select" style="padding: 6px 30px 6px 10px; font-size: 13px; background-position: right 8px center;">
+                <option value="hot">Hot</option>
+                <option value="warm">Warm</option>
+                <option value="cold">Cold</option>
+              </select>
             </div>
           </div>
           
@@ -380,15 +390,6 @@
               <option value="negotiation">Negotiation</option>
               <option value="won">Closed Won</option>
               <option value="lost">Closed Lost</option>
-            </select>
-          </div>
-          
-          <div class="form-group">
-            <label class="form-label" for="editTemperature">Update Temperature</label>
-            <select id="editTemperature" class="form-select">
-              <option value="hot">Hot</option>
-              <option value="warm">Warm</option>
-              <option value="cold">Cold</option>
             </select>
           </div>
 
@@ -434,6 +435,9 @@
   <!-- Lucide Icons Libraries -->
   <script src="https://cdn.jsdelivr.net/npm/lucide@latest"></script>
   
+  <!-- SheetJS Library for importing Excel/CSV -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
   <!-- Firebase SDKs & Config -->
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>

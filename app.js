@@ -446,6 +446,7 @@ function setupDragAndDrop() {
               notes: lead.notes
             })
               .then(() => {
+                syncToGoogleSheet(lead);
                 showToast(`Moved ${lead.company} to ${capitalize(targetColumn)}`, "success");
               })
               .catch((error) => {
@@ -454,6 +455,7 @@ function setupDragAndDrop() {
               });
           } else {
             saveState();
+            syncToGoogleSheet(lead);
             refreshAllData();
             showToast(`Moved ${lead.company} to ${capitalize(targetColumn)}`, "success");
           }
@@ -536,7 +538,9 @@ function handleAddLeadSubmit(e) {
   
   if (useFirebase) {
     db.collection("leads").add(newLead)
-      .then(() => {
+      .then((docRef) => {
+        newLead.id = docRef.id;
+        syncToGoogleSheet(newLead);
         document.getElementById("addLeadDialog").close();
         showToast(`Added new lead for ${company}`, "success");
       })
@@ -549,6 +553,7 @@ function handleAddLeadSubmit(e) {
     newLead.id = `lead-${Date.now()}`;
     leads.push(newLead);
     saveState();
+    syncToGoogleSheet(newLead);
     document.getElementById("addLeadDialog").close();
     refreshAllData();
     showToast(`Added new lead for ${company}`, "success");
@@ -567,16 +572,12 @@ function openLeadDetailDialog(leadId) {
   // Set fields
   document.getElementById("detailTitle").textContent = lead.company;
   document.getElementById("detailCompany").textContent = lead.company;
-  document.getElementById("detailContact").textContent = lead.contactName;
-  document.getElementById("detailEmail").textContent = lead.email;
-  document.getElementById("detailPhone").textContent = lead.phone;
-  document.getElementById("detailBudget").textContent = `₹${Number(lead.budget).toLocaleString()}`;
   
-  const tempBadge = document.getElementById("detailTemperatureBadge");
-  tempBadge.className = `detail-value temperature-badge-inline ${lead.temperature}`;
-  tempBadge.textContent = lead.temperature;
+  document.getElementById("editContactName").value = lead.contactName || "";
+  document.getElementById("editEmailAddress").value = lead.email || "";
+  document.getElementById("editPhoneNumber").value = lead.phone || "";
+  document.getElementById("editBudgetAmount").value = lead.budget || 0;
   
-  // Configure Interactive Fields in Edit Mode
   const editStatus = document.getElementById("editStatus");
   const editTemperature = document.getElementById("editTemperature");
   const editAssignee = document.getElementById("editAssignee");
@@ -597,22 +598,19 @@ function openLeadDetailDialog(leadId) {
   editAssignee.value = lead.assignee;
   
   // Permissions inside detailed view:
+  const isReadOnly = (currentUser.role !== "boss" && lead.assignee !== currentUser.key);
+  
+  document.getElementById("editContactName").disabled = isReadOnly;
+  document.getElementById("editEmailAddress").disabled = isReadOnly;
+  document.getElementById("editPhoneNumber").disabled = isReadOnly;
+  document.getElementById("editBudgetAmount").disabled = isReadOnly;
+  editTemperature.disabled = isReadOnly;
+  editStatus.disabled = isReadOnly;
+  
   if (currentUser.role === "boss") {
-    // Boss can edit status, temperature, and assignee
-    editStatus.disabled = false;
-    editTemperature.disabled = false;
     editAssignee.disabled = false;
     document.getElementById("btnDeleteLead").style.display = "inline-flex";
-  } else if (lead.assignee === currentUser.key) {
-    // Assigned agent can edit status & temp, but NOT assignee
-    editStatus.disabled = false;
-    editTemperature.disabled = false;
-    editAssignee.disabled = true;
-    document.getElementById("btnDeleteLead").style.display = "none";
   } else {
-    // Other agents cannot edit anything on this lead
-    editStatus.disabled = true;
-    editTemperature.disabled = true;
     editAssignee.disabled = true;
     document.getElementById("btnDeleteLead").style.display = "none";
   }
@@ -690,6 +688,7 @@ function handleAddNote() {
       notes: lead.notes
     })
       .then(() => {
+        syncToGoogleSheet(lead);
         textInput.value = "";
         renderLeadNotes(lead);
         showToast("Interaction note saved successfully.", "success");
@@ -700,6 +699,7 @@ function handleAddNote() {
       });
   } else {
     saveState();
+    syncToGoogleSheet(lead);
     textInput.value = "";
     renderLeadNotes(lead);
     refreshAllData();
@@ -720,13 +720,38 @@ function handleLeadDetailsSave() {
     return;
   }
   
+  const newContact = document.getElementById("editContactName").value.trim();
+  const newEmail = document.getElementById("editEmailAddress").value.trim();
+  const newPhone = document.getElementById("editPhoneNumber").value.trim();
+  const newBudget = Number(document.getElementById("editBudgetAmount").value);
   const newStatus = document.getElementById("editStatus").value;
   const newTemp = document.getElementById("editTemperature").value;
   const newAssignee = document.getElementById("editAssignee").value;
   
+  if (!newContact) {
+    showToast("Contact Name is required.", "error");
+    return;
+  }
+  
   let changes = [];
   const timestamp = new Date().toISOString().replace("T", " ").substring(0, 16);
   
+  if (lead.contactName !== newContact) {
+    changes.push(`Contact: ${lead.contactName} ➔ ${newContact}`);
+    lead.contactName = newContact;
+  }
+  if (lead.email !== newEmail) {
+    changes.push(`Email: ${lead.email} ➔ ${newEmail}`);
+    lead.email = newEmail;
+  }
+  if (lead.phone !== newPhone) {
+    changes.push(`Phone: ${lead.phone} ➔ ${newPhone}`);
+    lead.phone = newPhone;
+  }
+  if (lead.budget !== newBudget) {
+    changes.push(`Budget: ₹${lead.budget.toLocaleString()} ➔ ₹${newBudget.toLocaleString()}`);
+    lead.budget = newBudget;
+  }
   if (lead.status !== newStatus) {
     changes.push(`Stage: ${capitalize(lead.status)} ➔ ${capitalize(newStatus)}`);
     lead.status = newStatus;
@@ -752,12 +777,17 @@ function handleLeadDetailsSave() {
     
     if (useFirebase) {
       db.collection("leads").doc(leadId).update({
+        contactName: lead.contactName,
+        email: lead.email,
+        phone: lead.phone,
+        budget: lead.budget,
         status: lead.status,
         temperature: lead.temperature,
         assignee: lead.assignee,
         notes: lead.notes
       })
         .then(() => {
+          syncToGoogleSheet(lead);
           showToast("Lead updates saved successfully.", "success");
         })
         .catch((error) => {
@@ -766,6 +796,7 @@ function handleLeadDetailsSave() {
         });
     } else {
       saveState();
+      syncToGoogleSheet(lead);
       refreshAllData();
       showToast("Lead updates saved successfully.", "success");
     }
@@ -805,6 +836,43 @@ function handleDeleteLead() {
 }
 
 // 9. Auxiliary Helpers
+function syncToGoogleSheet(lead) {
+  if (typeof googleSheetWebhookUrl === 'undefined' || !googleSheetWebhookUrl) {
+    return; // Skip if URL is not configured
+  }
+
+  // Find lead details with expanded assignee name for spreadsheet clarity
+  const assigneeName = USERS[lead.assignee] ? USERS[lead.assignee].name : lead.assignee;
+  
+  const payload = {
+    id: lead.id,
+    company: lead.company,
+    contactName: lead.contactName,
+    email: lead.email,
+    phone: lead.phone,
+    budget: lead.budget,
+    temperature: lead.temperature,
+    status: lead.status,
+    assignee: assigneeName,
+    notes: lead.notes
+  };
+
+  fetch(googleSheetWebhookUrl, {
+    method: "POST",
+    mode: "no-cors",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(payload)
+  })
+  .then(() => {
+    console.log(`Synced lead ${lead.company} to Google Sheets.`);
+  })
+  .catch(err => {
+    console.error("Google Sheet sync error:", err);
+  });
+}
+
 function exportToExcel() {
   if (currentUser.role !== "boss") {
     showToast("Only the Administrator (Vijay) can export data.", "error");

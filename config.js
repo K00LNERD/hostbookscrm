@@ -7,3 +7,7 @@ const firebaseConfig = {
   messagingSenderId: "497614595976",
   appId: "1:497614595976:web:705d737cf9ffd2dc1d3c3d"
 };
+
+// Google Sheets Sync Configuration
+// Paste your deployed Google Web App Webhook URL here to enable real-time sheet sync
+const googleSheetWebhookUrl = "";
