@@ -250,7 +250,7 @@ function renderBoard(filteredLeads) {
     
     const totalBudget = colLeads.reduce((sum, l) => sum + Number(l.budget), 0);
     const totalBadge = document.getElementById(`col-${col}-total`);
-    totalBadge.textContent = `$${totalBudget.toLocaleString()}`;
+    totalBadge.textContent = `₹${totalBudget.toLocaleString()}`;
     
     colLeads.forEach(lead => {
       const card = document.createElement("div");
@@ -278,7 +278,7 @@ function renderBoard(filteredLeads) {
           </div>
         </div>
         <div class="lead-card-footer">
-          <span class="lead-budget">$${Number(lead.budget).toLocaleString()}</span>
+          <span class="lead-budget">₹${Number(lead.budget).toLocaleString()}</span>
           <div class="lead-assignee" title="Assigned to ${assigneeName}">
             <div class="lead-assignee-avatar">${initials}</div>
             <span class="lead-assignee-name">${assigneeName}</span>
@@ -313,8 +313,8 @@ function renderDashboard(filteredLeads) {
   const hotPct = totalLeads > 0 ? Math.round((hotCount / totalLeads) * 100) : 0;
   
   document.getElementById("kpiTotalLeads").textContent = totalLeads;
-  document.getElementById("kpiPipelineValue").textContent = `$${totalPipeline.toLocaleString()}`;
-  document.getElementById("kpiClosedWon").textContent = `$${closedWonVal.toLocaleString()}`;
+  document.getElementById("kpiPipelineValue").textContent = `₹${totalPipeline.toLocaleString()}`;
+  document.getElementById("kpiClosedWon").textContent = `₹${closedWonVal.toLocaleString()}`;
   document.getElementById("kpiHotRatio").textContent = `${hotPct}%`;
 }
 
@@ -356,11 +356,11 @@ function renderBossProgress() {
         </div>
       </td>
       <td>
-        <div style="font-weight:600; color:white;">$${pipelineVal.toLocaleString()}</div>
+        <div style="font-weight:600; color:white;">₹${pipelineVal.toLocaleString()}</div>
         <div style="font-size:11px; color:var(--text-secondary);">Pipeline</div>
       </td>
       <td>
-        <div style="font-weight:600; color:var(--success);">$${wonVal.toLocaleString()}</div>
+        <div style="font-weight:600; color:var(--success);">₹${wonVal.toLocaleString()}</div>
         <div style="font-size:11px; color:var(--text-secondary);">${wonLeads.length} won / ${lostLeads.length} lost</div>
       </td>
       <td>
@@ -570,7 +570,7 @@ function openLeadDetailDialog(leadId) {
   document.getElementById("detailContact").textContent = lead.contactName;
   document.getElementById("detailEmail").textContent = lead.email;
   document.getElementById("detailPhone").textContent = lead.phone;
-  document.getElementById("detailBudget").textContent = `$${Number(lead.budget).toLocaleString()}`;
+  document.getElementById("detailBudget").textContent = `₹${Number(lead.budget).toLocaleString()}`;
   
   const tempBadge = document.getElementById("detailTemperatureBadge");
   tempBadge.className = `detail-value temperature-badge-inline ${lead.temperature}`;
